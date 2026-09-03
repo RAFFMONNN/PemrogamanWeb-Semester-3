@@ -185,6 +185,7 @@ footer {
 .table-responsive {
     overflow-x: auto;
 }
+/* ===== Artikel Responsif ===== */
 article {
     overflow-x: auto;
 }
