@@ -119,7 +119,7 @@ function initValidasiForm() {
         }
     });
 }
-
+// tambah counter jumlah baris
 function updateRowCounter() {
     const table = document.querySelector(".table-responsive table");
     const counter = document.getElementById("row-counter");
