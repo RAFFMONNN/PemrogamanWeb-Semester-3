@@ -34,7 +34,8 @@ function initTableFilter() {
         const keyword = input.value.toLowerCase();
         const rows = table.querySelectorAll("tbody tr");
         rows.forEach(function (row) {
-            const teks = row.querySelector("td")?.textContent.toLowerCase() || "";  
+            const teks = row.querySelector("td")?.textContent.toLowerCase() || ""; 
+            // perluas initTableFilter pada kode diatas
             row.style.display = teks.includes(keyword) ? "" : "none";
         });
         updateRowCounter();
