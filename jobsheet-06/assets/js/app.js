@@ -15,6 +15,7 @@ function initNavToggle() {
 // tombol .btn-hapus belum tentu ada saat DOMContentLoaded.
 function initHapusConfirm() {
     document.addEventListener("click", function (e) {
+        console.log(e.target);
         const btn = e.target.closest(".btn-hapus");
         if (!btn) return;
 
@@ -110,21 +111,51 @@ function initValidasiForm() {
     });
 }
 // menambahkan fungsi untuk memuat ulang daftar buku 
-function initMuatUlang() {
+function initMuatUlang(fungsiMuatUlang) {
     const btn = document.getElementById("refresh-btn");
-    if (!btn) return;
+    if (!btn || !fungsiMuatUlang) return;
 
     btn.addEventListener("click", async function () {
-        await muatDaftarBuku();   // tunggu sampai data selesai dimuat
-        initHapusConfirm();       // pasang ulang event listener tombol hapus (lihat penjelasan di bawah)
+        await fungsiMuatUlang();
+        // TIDAK perlu panggil initHapusConfirm() lagi,
+        // karena sudah pakai event delegation di document
     });
 }
 
-document.addEventListener("DOMContentLoaded", async function () {
-    await muatDaftarBuku();  // tunggu sampai data selesai dimuat sebelum update counter
-    initNavToggle();
-    initHapusConfirm();
-    initTableFilter();
-    initValidasiForm();
-    initMuatUlang();  // pasang event listener tombol muat ulang (lihat buku.js/anggota.js)
-});
+async function muatDaftarData(namaFileJSON, daftarKunci, tbodySelector, kolomAksiHTML) {
+    const tbody = document.querySelector(tbodySelector);
+    const loading = document.getElementById("loading-indicator");
+    if (!tbody) return;
+
+    if (loading) loading.style.display = "block";
+    tbody.innerHTML = "";
+
+    try {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+
+        const res = await fetch(namaFileJSON);
+        if (!res.ok) {
+            throw new Error("Gagal mengambil data (status " + res.status + ")");
+        }
+        const daftarData = await res.json();
+
+        daftarData.forEach(function (item) {
+            const tr = document.createElement("tr");
+            let isiBaris = "";
+            daftarKunci.forEach(function (kunci) {
+                isiBaris += "<td>" + item[kunci] + "</td>";
+            });
+            if (kolomAksiHTML) {
+                isiBaris += "<td>" + kolomAksiHTML + "</td>";
+            }
+            tr.innerHTML = isiBaris;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        const colspan = daftarKunci.length + (kolomAksiHTML ? 1 : 0);
+        tbody.innerHTML =
+            "<tr><td colspan=\"" + colspan + "\">Gagal memuat data: " + err.message + "</td></tr>";
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
+}
