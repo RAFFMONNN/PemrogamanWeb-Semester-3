@@ -131,7 +131,7 @@ async function muatDaftarData(namaFileJSON, daftarKunci, tbodySelector, kolomAks
     tbody.innerHTML = "";
 
     try {
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulasi delay 3 detik
 
         const res = await fetch(namaFileJSON);
         if (!res.ok) {
