@@ -6,7 +6,16 @@ require __DIR__ . '/../includes/koneksi.php';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
-$daftarBuku = $pdo->query("SELECT * FROM buku ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$keyword = trim($_GET['keyword'] ?? '');
+
+if ($keyword !== '') {
+    $stmt = $pdo->prepare("SELECT * FROM buku WHERE judul ILIKE :keyword ORDER BY id DESC");
+    $stmt->execute(['keyword' => '%' . $keyword . '%']);
+} else {
+    $stmt = $pdo->query("SELECT * FROM buku ORDER BY id DESC");
+}
+
+$daftarBuku = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
         <section>
             <h2>Daftar Buku</h2>
@@ -16,9 +25,14 @@ $daftarBuku = $pdo->query("SELECT * FROM buku ORDER BY id DESC")->fetchAll(PDO::
             <?php endif; ?>
 
             <div class="search-box">
-                <label for="search-input">Cari Judul Buku</label>
-                <input type="text" id="search-input" placeholder="Ketik judul buku...">
-            </div>
+    <form method="GET" action="">
+        <label for="search-input">Cari Judul Buku</label>
+        <input type="text" id="search-input" name="keyword" 
+               placeholder="Ketik judul buku..." 
+               value="<?php echo htmlspecialchars($_GET['keyword'] ?? ''); ?>">
+        <button type="submit">Cari</button>
+    </form>
+</div>
 
             <div class="table-responsive">
             <table>
@@ -57,8 +71,3 @@ $daftarBuku = $pdo->query("SELECT * FROM buku ORDER BY id DESC")->fetchAll(PDO::
                         </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
-                </tbody>
-            </table>
-            </div>
-        </section>
-<?php include __DIR__ . '/../includes/footer.php'; ?>
