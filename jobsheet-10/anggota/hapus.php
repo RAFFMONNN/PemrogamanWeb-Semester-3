@@ -2,7 +2,11 @@
 require __DIR__ . '/../includes/auth.php';
 require __DIR__ . '/../includes/koneksi.php';
 
-
+if(($_SESSION['role'] ?? null) !== 'admin') {
+    $_SESSION['flash'] = ['type' => 'error', 'pesan' => 'Anda tidak memiliki izin untuk menghapus data'];
+    header('Location: ../index.php');
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: list.php');
