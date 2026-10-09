@@ -17,14 +17,25 @@ if ($anggotaId === '' || $bukuId === '') {
 try {
     $pdo->beginTransaction();
 
-    // Kunci baris buku (FOR UPDATE) agar stok tidak berubah oleh transaksi lain
-    // di tengah proses ini — mencegah stok menjadi negatif akibat race condition.
     $cek = $pdo->prepare("SELECT stok FROM buku WHERE id = :id FOR UPDATE");
     $cek->execute(['id' => $bukuId]);
     $buku = $cek->fetch(PDO::FETCH_ASSOC);
 
     if (!$buku || $buku['stok'] < 1) {
         throw new Exception('Stok buku tidak tersedia.');
+    }
+
+    // Validasi bisnis: anggota dengan pinjaman aktif terlambat > 14 hari ditolak
+    $telat = $pdo->prepare(
+        "SELECT COUNT(*) FROM peminjaman
+         WHERE anggota_id = :anggota_id
+           AND status = 'dipinjam'
+           AND CURRENT_DATE - tanggal_pinjam > 14"
+    );
+    $telat->execute(['anggota_id' => $anggotaId]);
+
+    if ($telat->fetchColumn() > 0) {
+        throw new Exception('Anggota memiliki peminjaman yang terlambat lebih dari 14 hari dan belum boleh meminjam buku baru.');
     }
 
     $insert = $pdo->prepare(
